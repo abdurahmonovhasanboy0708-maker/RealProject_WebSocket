@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>Reyting Doskasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10131c;
+    --panel: #171b28;
+    --panel-2: #1e2333;
+    --line: #2a3044;
+    --text: #e9ebf2;
+    --sub: #8890a6;
+    --gold: #f2b134;
+    --silver: #b8c0d4;
+    --bronze: #d9895a;
+    --up: #4fd6a8;
+    --down: #ef6a6a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 15% -10%, #1b2136 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Sora',sans-serif;
+    padding:40px 20px 80px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+  .eyebrow{color:var(--sub);font-size:13px;letter-spacing:.02em;margin-bottom:6px;}
+  h1{font-size:28px;font-weight:800;margin:0 0 4px;letter-spacing:-0.01em;}
+  .sub{color:var(--sub);font-size:14px;}
+
+  .status{
+    display:flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;color:var(--sub);
+    padding:7px 12px;border:1px solid var(--line);border-radius:999px;
+    white-space:nowrap;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--down);flex:none;}
+  .status.on .dot{background:var(--up);}
+
+  .board{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:8px;
+    position:relative;
+    min-height:80px;
+  }
+  .empty{padding:40px 14px;text-align:center;color:var(--sub);font-size:14px;}
+
+  .row{
+    display:grid;
+    grid-template-columns:36px 40px 1fr auto;
+    align-items:center;
+    gap:14px;
+    padding:12px 14px;
+    border-radius:14px;
+    position:relative;
+    transition: background-color .25s ease, box-shadow .25s ease;
+  }
+  .row.top1{background:linear-gradient(90deg, rgba(242,177,52,.14), transparent 70%);}
+  .rank{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:18px;
+    color:var(--sub);
+    text-align:center;
+  }
+  .row.top1 .rank{color:var(--gold);}
+  .row.top2 .rank{color:var(--silver);}
+  .row.top3 .rank{color:var(--bronze);}
+
+  .avatar{
+    width:40px;height:40px;border-radius:50%;
+    object-fit:cover;background:var(--panel-2);
+    border:1px solid var(--line);
+    flex:none;
+  }
+  .avatar.fallback{
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:14px;color:var(--sub);
+  }
+
+  .who{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{height:6px;border-radius:4px;background:var(--panel-2);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#5b7bff,#7fd6ff);transition:width .5s ease;}
+
+  .score-col{display:flex;align-items:center;gap:10px;}
+  .score{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:19px;
+    min-width:44px;
+    text-align:right;
+    font-variant-numeric: tabular-nums;
+  }
+  .delta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    font-weight:700;
+    padding:3px 7px;
+    border-radius:999px;
+    opacity:0;
+    transform:translateY(-4px);
+  }
+  .delta.show{animation: pop .9s ease forwards;}
+  .delta.pos{color:var(--up);background:rgba(79,214,168,.12);}
+  .delta.neg{color:var(--down);background:rgba(239,106,106,.12);}
+  @keyframes pop{
+    0%{opacity:0;transform:translateY(-4px);}
+    15%{opacity:1;transform:translateY(0);}
+    75%{opacity:1;}
+    100%{opacity:0;transform:translateY(-6px);}
+  }
+  .glow{box-shadow: 0 0 0 1px rgba(91,123,255,.5), 0 6px 20px rgba(91,123,255,.18);}
+
+  .controls{
+    display:flex;
+    gap:10px;
+    margin-top:22px;
+    flex-wrap:wrap;
+  }
+  button{
+    font-family:'Sora',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    color:var(--text);
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition: border-color .15s ease, transform .1s ease;
+  }
+  button:hover{border-color:#4a5578;}
+  button:active{transform:scale(.97);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Sinf reytingi</div>
+      <h1>Kim eng ko'p ball to'pladi?</h1>
+      <div class="sub">Ball o'zgarsa, o'rinlar jonli almashadi</div>
+    </div>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">ulanmoqda...</span></div>
+  </header>
+
+  <div class="board" id="board"><div class="empty">Ma'lumot kutilmoqda...</div></div>
+
+  <div class="controls">
+    <button id="reconnectBtn">Qayta ulanish</button>
+  </div>
+</div>
+
+<script>
+/*
+  KUTILAYOTGAN WEBSOCKET PROTOKOLI  (ws://localhost:8000/ws/dashboard/)
+
+  1) ULANGANDA — server to'liq ro'yxat yuborishi kerak:
+  {
+    "type": "init",
+    "students": [
+      { "id": 1, "fullname": "Madina Yusupova", "photo": "/media/photos/1.jpg", "ball": 82 },
+      { "id": 2, "fullname": "Sardor Aliyev",  "photo": "/media/photos/2.jpg", "ball": 76 }
+    ]
+  }
+
+  2) BALL O'ZGARGANDA (masalan Django signal orqali) — faqat bitta yangilanish:
+  {
+    "type": "ball_update",
+    "student_id": 1,
+    "ball": 91          // YANGI umumiy ball (delta emas, to'liq son)
+  }
+
+  Agar backendda alohida "Ball" jadvali bo'lsa (student_id, ball),
+  signal shu jadvalga yozilganda shu formatdagi eventni group_send qilib yuborsa yetarli.
+*/
+
+const WS_URL = "ws://localhost:8000/ws/dashboard/";
+
+let students = [];   // { id, fullname, photo, ball }
+let socket = null;
+let reconnectTimer = null;
+
+const board = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+
+function setStatus(connected, label){
+  statusEl.classList.toggle('on', connected);
+  statusText.textContent = label;
+}
+
+function connect(){
+  setStatus(false, "ulanmoqda...");
+  socket = new WebSocket(WS_URL);
+
+  socket.addEventListener('open', () => {
+    setStatus(true, "onlayn");
+  });
+
+  socket.addEventListener('close', () => {
+    setStatus(false, "uzildi — qayta urinilmoqda");
+    reconnectTimer = setTimeout(connect, 3000);
+  });
+
+  socket.addEventListener('error', () => {
+    socket.close();
+  });
+
+  socket.addEventListener('message', (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+    if (msg.type === 'init' && Array.isArray(msg.students)) {
+      students = msg.students.map(s => ({
+        id: s.id, fullname: s.fullname, photo: s.photo, ball: s.ball
+      }));
+      render();
+    }
+
+    if (msg.type === 'ball_update') {
+      const s = students.find(st => st.id === msg.student_id);
+      if (!s) return;
+      const delta = msg.ball - s.ball;
+      s.ball = msg.ball;
+      render(msg.student_id, delta);
+    }
+  });
+}
+
+document.getElementById('reconnectBtn').addEventListener('click', () => {
+  clearTimeout(reconnectTimer);
+  if (socket) socket.close();
+  connect();
+});
+
+function initials(name){
+  return (name || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+function medalClass(i){
+  return i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+}
+
+function render(changedId, delta) {
+  if (!students.length) {
+    board.innerHTML = '<div class="empty">Ma\'lumot kutilmoqda...</div>';
+    return;
+  }
+
+  const prevRects = {};
+  board.querySelectorAll('.row').forEach(el => {
+    prevRects[el.dataset.id] = el.getBoundingClientRect();
+  });
+
+  const sorted = [...students].sort((a,b) => b.ball - a.ball);
+  const maxBall = Math.max(...students.map(s => s.ball), 1);
+
+  board.innerHTML = '';
+  sorted.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'row ' + medalClass(i);
+    row.dataset.id = s.id;
+
+    const avatarHtml = s.photo
+      ? `<img class="avatar" src="${s.photo}" alt="" onerror="this.outerHTML='<div class=&quot;avatar fallback&quot;>${initials(s.fullname)}</div>'">`
+      : `<div class="avatar fallback">${initials(s.fullname)}</div>`;
+
+    row.innerHTML = `
+      <div class="rank">${i+1}</div>
+      ${avatarHtml}
+      <div class="who">
+        <div class="name">${s.fullname}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(s.ball/maxBall*100).toFixed(0)}%"></div></div>
+      </div>
+      <div class="score-col">
+        <span class="delta ${changedId===s.id ? (delta>0?'pos show':'neg show') : ''}">${changedId===s.id ? (delta>0?'+':'')+delta : ''}</span>
+        <div class="score">${s.ball}</div>
+      </div>
+    `;
+    board.appendChild(row);
+  });
+
+  board.querySelectorAll('.row').forEach(el => {
+    const prev = prevRects[el.dataset.id];
+    if (!prev) return;
+    const next = el.getBoundingClientRect();
+    const dy = prev.top - next.top;
+    if (dy) {
+      el.animate(
+        [{ transform: `translateY(${dy}px)` }, { transform: 'translateY(0)' }],
+        { duration: 500, easing: 'cubic-bezier(.2,.8,.2,1)' }
+      );
+    }
+    if (el.dataset.id == changedId) {
+      el.classList.add('glow');
+      setTimeout(() => el.classList.remove('glow'), 700);
+    }
+  });
+}
+
+connect();
+</script>
+</body>
+</html>
